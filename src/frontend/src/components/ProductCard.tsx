@@ -37,6 +37,8 @@ export function ProductCard({
   isAdding,
 }: ProductCardProps) {
   const hasImage = product.imageUrl && product.imageUrl.length > 0;
+  const outOfStock = product.stock === 0n;
+  const lowStock = product.stock > 0n && product.stock <= 5n;
 
   return (
     <motion.div
@@ -66,6 +68,15 @@ export function ProductCard({
           </div>
         )}
 
+        {/* Out of stock overlay */}
+        {outOfStock && (
+          <div className="absolute inset-0 bg-background/60 flex items-center justify-center">
+            <Badge className="bg-destructive text-destructive-foreground text-xs font-semibold px-3 py-1">
+              Out of Stock
+            </Badge>
+          </div>
+        )}
+
         {/* Category badge overlay */}
         <div className="absolute top-3 left-3">
           <span
@@ -81,9 +92,16 @@ export function ProductCard({
         <h3 className="font-display font-semibold text-base text-foreground mb-1 leading-snug">
           {product.name}
         </h3>
-        <p className="text-sm text-muted-foreground mb-4 flex-1 line-clamp-2">
+        <p className="text-sm text-muted-foreground mb-3 flex-1 line-clamp-2">
           {product.description}
         </p>
+
+        {/* Low stock indicator */}
+        {lowStock && (
+          <p className="text-xs font-medium text-amber-600 mb-2">
+            Only {product.stock.toString()} left!
+          </p>
+        )}
 
         <div className="flex items-center justify-between">
           <span className="font-display font-bold text-lg text-foreground">
@@ -93,11 +111,11 @@ export function ProductCard({
             data-ocid={`products.item.${index + 1}.button`}
             size="sm"
             onClick={() => onAddToCart(product.id)}
-            disabled={isAdding}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 transition-transform hover:scale-105"
+            disabled={isAdding || outOfStock}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <ShoppingCart className="h-3.5 w-3.5 mr-1.5" />
-            Add
+            <ShoppingCart className="h-3 w-3 mr-1.5" />
+            {outOfStock ? "Unavailable" : "Add"}
           </Button>
         </div>
       </div>

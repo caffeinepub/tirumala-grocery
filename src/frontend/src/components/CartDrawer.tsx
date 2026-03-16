@@ -68,7 +68,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
           <SheetHeader className="px-6 pt-6 pb-4 border-b border-border">
             <div className="flex items-center justify-between">
               <SheetTitle className="font-display text-xl font-bold flex items-center gap-2">
-                <ShoppingBag className="h-5 w-5" />
+                <ShoppingBag className="h-4 w-4" />
                 Your Cart
                 {items.length > 0 && (
                   <span className="text-sm font-normal text-muted-foreground">
@@ -82,7 +82,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 size="icon"
                 onClick={onClose}
               >
-                <X className="h-4 w-4" />
+                <X className="h-3.5 w-3.5" />
               </Button>
             </div>
           </SheetHeader>
@@ -104,7 +104,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               data-ocid="cart.empty_state"
               className="flex-1 flex flex-col items-center justify-center px-6 text-center"
             >
-              <ShoppingBag className="h-14 w-14 text-muted-foreground/30 mb-4" />
+              <ShoppingBag className="h-12 w-12 text-muted-foreground/30 mb-4" />
               <h3 className="font-display font-semibold text-lg text-foreground mb-1">
                 Your cart is empty
               </h3>
@@ -162,7 +162,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                         className="h-7 w-7 flex-shrink-0 text-muted-foreground hover:text-destructive"
                         onClick={() => handleRemove(item.id, item.name)}
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-3 w-3" />
                       </Button>
                     </li>
                   ))}
@@ -197,7 +197,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     onClick={handleClear}
                     disabled={clearCart.isPending}
                   >
-                    <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                    <Trash2 className="h-3 w-3 mr-1.5" />
                     Clear Cart
                   </Button>
                 </SheetFooter>

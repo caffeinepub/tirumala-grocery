@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useClearCart } from "../hooks/useQueries";
+import { usePlaceOrder } from "../hooks/useQueries";
 import { getBankDetails } from "./AdminPage";
 
 interface CustomerDetailsDialogProps {
@@ -92,7 +92,7 @@ export function CustomerDetailsDialog({
   itemCount,
   total,
 }: CustomerDetailsDialogProps) {
-  const clearCart = useClearCart();
+  const placeOrder = usePlaceOrder();
   const bankDetails = getBankDetails();
   const hasBankDetails =
     bankDetails.accountNumber || bankDetails.upiId || bankDetails.accountHolder;
@@ -126,7 +126,7 @@ export function CustomerDetailsDialog({
       setErrors(errs);
       return;
     }
-    clearCart.mutate(undefined, {
+    placeOrder.mutate(undefined, {
       onSuccess: () => {
         toast.success("Order placed successfully! We'll contact you shortly.", {
           duration: 5000,
@@ -505,9 +505,9 @@ export function CustomerDetailsDialog({
               data-ocid="customer.submit_button"
               type="submit"
               className="flex-1 bg-primary text-primary-foreground font-semibold"
-              disabled={clearCart.isPending}
+              disabled={placeOrder.isPending}
             >
-              {clearCart.isPending ? "Placing Order..." : "Place Order"}
+              {placeOrder.isPending ? "Placing Order..." : "Place Order"}
             </Button>
           </div>
         </form>

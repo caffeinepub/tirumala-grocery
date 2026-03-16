@@ -1,48 +1,58 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Product } from "../backend.d";
+import type { Product, backendInterface } from "../backend.d";
 import { useActor } from "./useActor";
 
+// Cast actor to the updated interface that includes stock fields
+function getActor(actor: unknown): backendInterface | null {
+  if (!actor) return null;
+  return actor as backendInterface;
+}
+
 export function useGetAllProducts() {
-  const { actor, isFetching } = useActor();
+  const { actor: rawActor, isFetching } = useActor();
   return useQuery<Product[]>({
     queryKey: ["products"],
-    queryFn: async () => {
+    queryFn: async (): Promise<Product[]> => {
+      const actor = getActor(rawActor);
       if (!actor) return [];
       return actor.getAllProducts();
     },
-    enabled: !!actor && !isFetching,
+    enabled: !!rawActor && !isFetching,
   });
 }
 
 export function useGetAllCategories() {
-  const { actor, isFetching } = useActor();
+  const { actor: rawActor, isFetching } = useActor();
   return useQuery<string[]>({
     queryKey: ["categories"],
-    queryFn: async () => {
+    queryFn: async (): Promise<string[]> => {
+      const actor = getActor(rawActor);
       if (!actor) return [];
       return actor.getAllCategories();
     },
-    enabled: !!actor && !isFetching,
+    enabled: !!rawActor && !isFetching,
   });
 }
 
 export function useGetCart() {
-  const { actor, isFetching } = useActor();
+  const { actor: rawActor, isFetching } = useActor();
   return useQuery<Product[]>({
     queryKey: ["cart"],
-    queryFn: async () => {
+    queryFn: async (): Promise<Product[]> => {
+      const actor = getActor(rawActor);
       if (!actor) return [];
       return actor.getCart();
     },
-    enabled: !!actor && !isFetching,
+    enabled: !!rawActor && !isFetching,
   });
 }
 
 export function useAddToCart() {
-  const { actor } = useActor();
+  const { actor: rawActor } = useActor();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (productId: bigint) => {
+      const actor = getActor(rawActor);
       if (!actor) throw new Error("Not connected");
       await actor.addToCart(productId);
     },
@@ -53,10 +63,11 @@ export function useAddToCart() {
 }
 
 export function useRemoveFromCart() {
-  const { actor } = useActor();
+  const { actor: rawActor } = useActor();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (productId: bigint) => {
+      const actor = getActor(rawActor);
       if (!actor) throw new Error("Not connected");
       await actor.removeFromCart(productId);
     },
@@ -67,10 +78,11 @@ export function useRemoveFromCart() {
 }
 
 export function useClearCart() {
-  const { actor } = useActor();
+  const { actor: rawActor } = useActor();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {
+      const actor = getActor(rawActor);
       if (!actor) throw new Error("Not connected");
       await actor.clearCart();
     },
@@ -80,8 +92,25 @@ export function useClearCart() {
   });
 }
 
+export function usePlaceOrder() {
+  const { actor: rawActor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const actor = getActor(rawActor);
+      if (!actor) throw new Error("Not connected");
+      await actor.placeOrder();
+    },
+    onSuccess: () => {
+      // placeOrder clears the cart and deducts stock
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+}
+
 export function useAddProduct() {
-  const { actor } = useActor();
+  const { actor: rawActor } = useActor();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (args: {
@@ -90,7 +119,9 @@ export function useAddProduct() {
       price: bigint;
       category: string;
       imageUrl: string;
+      stock: bigint;
     }) => {
+      const actor = getActor(rawActor);
       if (!actor) throw new Error("Not connected");
       return actor.addProduct(
         args.name,
@@ -98,6 +129,7 @@ export function useAddProduct() {
         args.price,
         args.category,
         args.imageUrl,
+        args.stock,
       );
     },
     onSuccess: () => {
@@ -107,7 +139,7 @@ export function useAddProduct() {
 }
 
 export function useUpdateProduct() {
-  const { actor } = useActor();
+  const { actor: rawActor } = useActor();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (args: {
@@ -117,7 +149,9 @@ export function useUpdateProduct() {
       price: bigint;
       category: string;
       imageUrl: string;
+      stock: bigint;
     }) => {
+      const actor = getActor(rawActor);
       if (!actor) throw new Error("Not connected");
       return actor.updateProduct(
         args.id,
@@ -126,6 +160,7 @@ export function useUpdateProduct() {
         args.price,
         args.category,
         args.imageUrl,
+        args.stock,
       );
     },
     onSuccess: () => {
@@ -135,10 +170,11 @@ export function useUpdateProduct() {
 }
 
 export function useDeleteProduct() {
-  const { actor } = useActor();
+  const { actor: rawActor } = useActor();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: bigint) => {
+      const actor = getActor(rawActor);
       if (!actor) throw new Error("Not connected");
       await actor.deleteProduct(id);
     },
@@ -149,10 +185,11 @@ export function useDeleteProduct() {
 }
 
 export function useAddCategory() {
-  const { actor } = useActor();
+  const { actor: rawActor } = useActor();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (name: string) => {
+      const actor = getActor(rawActor);
       if (!actor) throw new Error("Not connected");
       await actor.addCategory(name);
     },
@@ -163,10 +200,11 @@ export function useAddCategory() {
 }
 
 export function useDeleteCategory() {
-  const { actor } = useActor();
+  const { actor: rawActor } = useActor();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (name: string) => {
+      const actor = getActor(rawActor);
       if (!actor) throw new Error("Not connected");
       await actor.deleteCategory(name);
     },

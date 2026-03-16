@@ -87,6 +87,7 @@ interface ProductFormData {
   price: string;
   category: string;
   imageUrl: string;
+  stock: string;
 }
 
 function formatPrice(paise: bigint) {
@@ -95,14 +96,44 @@ function formatPrice(paise: bigint) {
 
 function productToForm(product?: Product): ProductFormData {
   if (!product)
-    return { name: "", description: "", price: "", category: "", imageUrl: "" };
+    return {
+      name: "",
+      description: "",
+      price: "",
+      category: "",
+      imageUrl: "",
+      stock: "0",
+    };
   return {
     name: product.name,
     description: product.description,
     price: (Number(product.price) / 100).toFixed(2),
     category: product.category,
     imageUrl: product.imageUrl,
+    stock: product.stock.toString(),
   };
+}
+
+function StockBadge({ stock }: { stock: bigint }) {
+  if (stock === 0n) {
+    return (
+      <Badge className="text-xs bg-destructive/15 text-destructive border-destructive/30 border font-medium">
+        Out of Stock
+      </Badge>
+    );
+  }
+  if (stock <= 5n) {
+    return (
+      <Badge className="text-xs bg-amber-500/15 text-amber-700 border-amber-400/40 border font-medium">
+        Low: {stock.toString()}
+      </Badge>
+    );
+  }
+  return (
+    <Badge className="text-xs bg-green-500/15 text-green-700 border-green-400/40 border font-medium">
+      Stock: {stock.toString()}
+    </Badge>
+  );
 }
 
 interface ProductDialogProps {
@@ -135,6 +166,7 @@ function ProductDialog({
       return;
     }
     const paise = BigInt(Math.round(Number.parseFloat(form.price) * 100));
+    const stock = BigInt(Math.max(0, Number.parseInt(form.stock) || 0));
     try {
       if (product) {
         await updateProduct.mutateAsync({
@@ -144,6 +176,7 @@ function ProductDialog({
           price: paise,
           category: form.category,
           imageUrl: form.imageUrl.trim(),
+          stock,
         });
         toast.success("Product updated successfully");
       } else {
@@ -153,6 +186,7 @@ function ProductDialog({
           price: paise,
           category: form.category,
           imageUrl: form.imageUrl.trim(),
+          stock,
         });
         toast.success("Product added successfully");
       }
@@ -224,6 +258,19 @@ function ProductDialog({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="prod-stock">Stock Quantity</Label>
+            <Input
+              id="prod-stock"
+              data-ocid="admin.product.stock.input"
+              type="number"
+              min="0"
+              step="1"
+              value={form.stock}
+              onChange={(e) => handleChange("stock", e.target.value)}
+              placeholder="0"
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="prod-img">Image URL (optional)</Label>
@@ -692,11 +739,14 @@ export function AdminPage({
                               <p className="text-sm font-medium text-foreground truncate">
                                 {p.name}
                               </p>
-                              <p className="text-xs text-muted-foreground">
-                                {formatPrice(p.price)}
-                                {p.description &&
-                                  ` · ${p.description.slice(0, 60)}${p.description.length > 60 ? "..." : ""}`}
-                              </p>
+                              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                <p className="text-xs text-muted-foreground">
+                                  {formatPrice(p.price)}
+                                  {p.description &&
+                                    ` · ${p.description.slice(0, 50)}${p.description.length > 50 ? "..." : ""}`}
+                                </p>
+                                <StockBadge stock={p.stock} />
+                              </div>
                             </div>
                             <div className="flex items-center gap-2 ml-3 shrink-0">
                               <Button
