@@ -90,8 +90,8 @@ interface ProductFormData {
   stock: string;
 }
 
-function formatPrice(paise: bigint) {
-  return `₹${(Number(paise) / 100).toFixed(2)}`;
+function formatPrice(price: bigint) {
+  return `\u20B9${Number(price).toLocaleString("en-IN")}`;
 }
 
 function productToForm(product?: Product): ProductFormData {
@@ -107,7 +107,7 @@ function productToForm(product?: Product): ProductFormData {
   return {
     name: product.name,
     description: product.description,
-    price: (Number(product.price) / 100).toFixed(2),
+    price: Number(product.price).toString(),
     category: product.category,
     imageUrl: product.imageUrl,
     stock: product.stock.toString(),
@@ -115,14 +115,14 @@ function productToForm(product?: Product): ProductFormData {
 }
 
 function StockBadge({ stock }: { stock: bigint }) {
-  if (stock === 0n) {
+  if (Number(stock) === 0) {
     return (
       <Badge className="text-xs bg-destructive/15 text-destructive border-destructive/30 border font-medium">
         Out of Stock
       </Badge>
     );
   }
-  if (stock <= 5n) {
+  if (Number(stock) <= 5) {
     return (
       <Badge className="text-xs bg-amber-500/15 text-amber-700 border-amber-400/40 border font-medium">
         Low: {stock.toString()}
@@ -165,7 +165,10 @@ function ProductDialog({
       toast.error("Please fill in all required fields");
       return;
     }
-    const paise = BigInt(Math.round(Number.parseFloat(form.price) * 100));
+    // Store price directly in rupees as entered
+    const price = BigInt(
+      Math.round(Math.abs(Number.parseFloat(form.price) || 0)),
+    );
     const stock = BigInt(Math.max(0, Number.parseInt(form.stock) || 0));
     try {
       if (product) {
@@ -173,7 +176,7 @@ function ProductDialog({
           id: product.id,
           name: form.name.trim(),
           description: form.description.trim(),
-          price: paise,
+          price,
           category: form.category,
           imageUrl: form.imageUrl.trim(),
           stock,
@@ -183,7 +186,7 @@ function ProductDialog({
         await addProduct.mutateAsync({
           name: form.name.trim(),
           description: form.description.trim(),
-          price: paise,
+          price,
           category: form.category,
           imageUrl: form.imageUrl.trim(),
           stock,
@@ -228,16 +231,16 @@ function ProductDialog({
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="prod-price">Price (₹) *</Label>
+              <Label htmlFor="prod-price">Price (\u20B9) *</Label>
               <Input
                 id="prod-price"
                 data-ocid="admin.product.price.input"
                 type="number"
                 min="0"
-                step="0.01"
+                step="1"
                 value={form.price}
                 onChange={(e) => handleChange("price", e.target.value)}
-                placeholder="50.00"
+                placeholder="50"
               />
             </div>
             <div className="space-y-1.5">
@@ -300,7 +303,7 @@ function ProductDialog({
             className="bg-primary text-primary-foreground"
           >
             {isPending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
             ) : null}
             {isPending
               ? "Saving..."
@@ -362,8 +365,8 @@ function SettingsTab() {
       {/* PIN section */}
       <div>
         <div className="flex items-center gap-2 mb-6">
-          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-            <KeyRound className="h-4 w-4 text-primary" />
+          <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center">
+            <KeyRound className="h-3.5 w-3.5 text-primary" />
           </div>
           <div>
             <h2 className="font-semibold text-foreground text-sm">
@@ -443,8 +446,8 @@ function SettingsTab() {
       {/* Bank / Payment Details section */}
       <div>
         <div className="flex items-center gap-2 mb-6">
-          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-            <CreditCard className="h-4 w-4 text-primary" />
+          <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center">
+            <CreditCard className="h-3.5 w-3.5 text-primary" />
           </div>
           <div>
             <h2 className="font-semibold text-foreground text-sm">
@@ -472,7 +475,7 @@ function SettingsTab() {
 
           <div className="space-y-1.5">
             <Label htmlFor="bank-name">
-              <Building2 className="inline h-3.5 w-3.5 mr-1" />
+              <Building2 className="inline h-3 w-3 mr-1" />
               Bank Name
             </Label>
             <Input
@@ -635,7 +638,7 @@ export function AdminPage({
                 onClick={onDeactivateAdmin}
                 className="text-xs text-destructive border-destructive/40 hover:bg-destructive/10 hover:text-destructive gap-1.5"
               >
-                <ShieldOff className="h-3.5 w-3.5" />
+                <ShieldOff className="h-3 w-3" />
                 Remove admin access
               </Button>
             )}
@@ -683,7 +686,7 @@ export function AdminPage({
                 size="sm"
                 className="bg-primary text-primary-foreground gap-1.5"
               >
-                <Plus className="h-4 w-4" />
+                <Plus className="h-3.5 w-3.5" />
                 Add Product
               </Button>
             </div>
@@ -704,7 +707,7 @@ export function AdminPage({
               >
                 <p className="text-sm">No products yet.</p>
                 <p className="text-xs mt-1">
-                  Click \u201cAdd Product\u201d to get started.
+                  Click &ldquo;Add Product&rdquo; to get started.
                 </p>
               </div>
             ) : (
@@ -755,10 +758,10 @@ export function AdminPage({
                                 variant="ghost"
                                 data-ocid={`admin.product.edit_button.${pi + 1}`}
                                 onClick={() => openEditProduct(p)}
-                                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                className="h-7 w-7 text-muted-foreground hover:text-foreground"
                                 aria-label="Edit product"
                               >
-                                <Pencil className="h-3.5 w-3.5" />
+                                <Pencil className="h-3 w-3" />
                               </Button>
                               <Button
                                 type="button"
@@ -767,10 +770,10 @@ export function AdminPage({
                                 data-ocid={`admin.product.delete_button.${pi + 1}`}
                                 onClick={() => handleDeleteProduct(p)}
                                 disabled={deleteProduct.isPending}
-                                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                className="h-7 w-7 text-muted-foreground hover:text-destructive"
                                 aria-label="Delete product"
                               >
-                                <Trash2 className="h-3.5 w-3.5" />
+                                <Trash2 className="h-3 w-3" />
                               </Button>
                             </div>
                           </div>
@@ -803,9 +806,9 @@ export function AdminPage({
                   className="bg-primary text-primary-foreground gap-1.5"
                 >
                   {addCategory.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   ) : (
-                    <Plus className="h-4 w-4" />
+                    <Plus className="h-3.5 w-3.5" />
                   )}
                   Add
                 </Button>
@@ -849,10 +852,10 @@ export function AdminPage({
                       data-ocid={`admin.category.delete_button.${i + 1}`}
                       onClick={() => handleDeleteCategory(cat)}
                       disabled={deleteCategory.isPending}
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                      className="h-7 w-7 text-muted-foreground hover:text-destructive"
                       aria-label={`Delete ${cat}`}
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
                 ))}

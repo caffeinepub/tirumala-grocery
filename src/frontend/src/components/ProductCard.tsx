@@ -26,8 +26,8 @@ function getCategoryColor(cat: string) {
   return CATEGORY_COLORS[key] ?? CATEGORY_COLORS.default;
 }
 
-function formatPrice(paise: bigint) {
-  return `₹${(Number(paise) / 100).toFixed(2)}`;
+function formatPrice(price: bigint) {
+  return `\u20B9${Number(price).toLocaleString("en-IN")}`;
 }
 
 export function ProductCard({
@@ -37,15 +37,14 @@ export function ProductCard({
   isAdding,
 }: ProductCardProps) {
   const hasImage = product.imageUrl && product.imageUrl.length > 0;
-  const outOfStock = product.stock === 0n;
-  const lowStock = product.stock > 0n && product.stock <= 5n;
+  const outOfStock = Number(product.stock) === 0;
+  const lowStock = Number(product.stock) > 0 && Number(product.stock) <= 5;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.45, delay: (index % 4) * 0.07 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: (index % 6) * 0.06 }}
       data-ocid={`products.item.${index + 1}`}
       className="group bg-card rounded-xl overflow-hidden border border-border hover:shadow-warm transition-shadow duration-300 flex flex-col"
     >
