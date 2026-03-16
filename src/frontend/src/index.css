@@ -1,0 +1,101 @@
+@font-face {
+  font-family: "Fraunces";
+  src: url("/assets/fonts/Fraunces.woff2") format("woff2");
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Figtree";
+  src: url("/assets/fonts/Figtree.woff2") format("woff2");
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Warm cream + terracotta palette */
+    --background: 97 0.015 80;
+    --foreground: 22 0.04 45;
+
+    --card: 96 0.01 82;
+    --card-foreground: 22 0.04 45;
+
+    --popover: 97 0.01 82;
+    --popover-foreground: 22 0.04 45;
+
+    /* Terracotta primary */
+    --primary: 60 0.13 42;
+    --primary-foreground: 97 0.015 95;
+
+    /* Sage secondary */
+    --secondary: 88 0.04 145;
+    --secondary-foreground: 30 0.04 40;
+
+    --muted: 93 0.01 80;
+    --muted-foreground: 55 0.03 60;
+
+    /* Amber accent */
+    --accent: 78 0.09 75;
+    --accent-foreground: 22 0.04 30;
+
+    --destructive: 50 0.18 25;
+    --destructive-foreground: 97 0.015 95;
+
+    --border: 88 0.02 75;
+    --input: 88 0.02 75;
+    --ring: 60 0.13 42;
+
+    --radius: 0.5rem;
+
+    --chart-1: 60 0.13 42;
+    --chart-2: 78 0.09 75;
+    --chart-3: 88 0.04 145;
+    --chart-4: 75 0.12 55;
+    --chart-5: 50 0.18 25;
+
+    --sidebar: 97 0.015 80;
+    --sidebar-foreground: 22 0.04 45;
+    --sidebar-primary: 60 0.13 42;
+    --sidebar-primary-foreground: 97 0.015 95;
+    --sidebar-accent: 93 0.01 80;
+    --sidebar-accent-foreground: 22 0.04 45;
+    --sidebar-border: 88 0.02 75;
+    --sidebar-ring: 60 0.13 42;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-body;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display;
+  }
+}
+
+@layer utilities {
+  .grain-overlay {
+    position: relative;
+  }
+  .grain-overlay::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1;
+  }
+}
