@@ -68,7 +68,7 @@ export function ProductGrid({
           <span className="text-xs font-semibold uppercase tracking-widest text-primary mb-1 block">
             Our Collection
           </span>
-          <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
+          <h2 className="font-display text-2xl md:text-3xl font-bold text-black">
             {filterCategory ? `${filterCategory} Products` : "Explore the Shop"}
           </h2>
         </div>
