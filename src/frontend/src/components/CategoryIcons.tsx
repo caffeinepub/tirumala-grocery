@@ -43,7 +43,7 @@ export function CategoryIcons({
   return (
     <section className="pt-3 pb-4 bg-background">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto scrollbar-hide">
           <div className="flex justify-start md:justify-center gap-6 md:gap-10 mb-3 min-w-max md:min-w-0 px-1">
             {isLoading
               ? SKELETON_KEYS.map((key) => (

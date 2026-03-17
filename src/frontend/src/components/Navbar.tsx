@@ -166,15 +166,7 @@ export function Navbar({
 
       {/* Colorful category chips row */}
       <div className="border-t border-stone-100 bg-gradient-to-r from-amber-50 via-white to-green-50">
-        <div
-          className="flex items-center gap-2 px-3 md:px-5 py-1.5 overflow-x-auto"
-          style={
-            {
-              scrollbarWidth: "none",
-              msOverflowStyle: "none",
-            } as React.CSSProperties
-          }
-        >
+        <div className="flex items-center gap-2 px-3 md:px-5 py-1.5 overflow-x-auto scrollbar-hide">
           {CATEGORY_CHIPS.map((chip) => (
             <button
               key={chip.label}

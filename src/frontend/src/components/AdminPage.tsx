@@ -884,7 +884,7 @@ export function AdminPage({
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="container mx-auto flex items-center justify-between h-14 px-4 md:px-6">
           <div className="flex items-center gap-3">
@@ -922,234 +922,238 @@ export function AdminPage({
         </div>
       </header>
 
-      <main className="container mx-auto px-4 md:px-6 py-8 max-w-4xl">
-        <div className="mb-8">
-          <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-1">
-            Product Management
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            Add, edit, or remove products and categories.
-          </p>
-        </div>
+      <main className="flex-1 overflow-y-auto">
+        <div className="container mx-auto px-4 md:px-6 py-8 max-w-4xl">
+          <div className="mb-8">
+            <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-1">
+              Product Management
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              Add, edit, or remove products and categories.
+            </p>
+          </div>
 
-        <Tabs defaultValue="products" data-ocid="admin.tabs">
-          <TabsList className="mb-6">
-            <TabsTrigger value="products" data-ocid="admin.products.tab">
-              Products
-            </TabsTrigger>
-            <TabsTrigger value="categories" data-ocid="admin.categories.tab">
-              Categories
-            </TabsTrigger>
-            <TabsTrigger value="offers" data-ocid="admin.offers.tab">
-              Offers
-            </TabsTrigger>
-            <TabsTrigger value="settings" data-ocid="admin.settings.tab">
-              Settings
-            </TabsTrigger>
-          </TabsList>
+          <Tabs defaultValue="products" data-ocid="admin.tabs">
+            <TabsList className="mb-6">
+              <TabsTrigger value="products" data-ocid="admin.products.tab">
+                Products
+              </TabsTrigger>
+              <TabsTrigger value="categories" data-ocid="admin.categories.tab">
+                Categories
+              </TabsTrigger>
+              <TabsTrigger value="offers" data-ocid="admin.offers.tab">
+                Offers
+              </TabsTrigger>
+              <TabsTrigger value="settings" data-ocid="admin.settings.tab">
+                Settings
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="products">
-            <div className="flex justify-between items-center mb-5">
-              <h2 className="font-semibold text-foreground">
-                All Products
-                {products && (
-                  <span className="ml-2 text-muted-foreground font-normal text-sm">
-                    ({products.length})
-                  </span>
-                )}
-              </h2>
-              <Button
-                type="button"
-                data-ocid="admin.add_product.open_modal_button"
-                onClick={openAddProduct}
-                size="sm"
-                className="bg-primary text-primary-foreground gap-1.5"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                Add Product
-              </Button>
-            </div>
-
-            {productsLoading ? (
-              <div
-                data-ocid="admin.products.loading_state"
-                className="space-y-3"
-              >
-                {[1, 2, 3].map((k) => (
-                  <Skeleton key={k} className="h-14 w-full rounded-lg" />
-                ))}
-              </div>
-            ) : !products || products.length === 0 ? (
-              <div
-                data-ocid="admin.products.empty_state"
-                className="text-center py-16 border border-dashed border-border rounded-xl text-muted-foreground"
-              >
-                <p className="text-sm">No products yet.</p>
-                <p className="text-xs mt-1">
-                  Click &ldquo;Add Product&rdquo; to get started.
-                </p>
-              </div>
-            ) : (
-              <Accordion type="multiple" className="space-y-2">
-                {Object.entries(grouped).map(([cat, items], ci) => (
-                  <AccordionItem
-                    key={cat}
-                    value={cat}
-                    className="border border-border rounded-lg overflow-hidden"
-                    data-ocid={`admin.category.panel.${ci + 1}`}
-                  >
-                    <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/40 font-medium">
-                      <span className="flex items-center gap-2">
-                        {cat}
-                        <Badge
-                          variant="outline"
-                          className="text-xs font-normal"
-                        >
-                          {items.length}
-                        </Badge>
-                      </span>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-0 pb-0">
-                      <div className="divide-y divide-border">
-                        {items.map((p, pi) => (
-                          <div
-                            key={p.id.toString()}
-                            data-ocid={`admin.product.item.${pi + 1}`}
-                            className="flex items-center justify-between px-4 py-3 hover:bg-muted/20 transition-colors"
-                          >
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm font-medium text-foreground truncate">
-                                {p.name}
-                              </p>
-                              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                                <p className="text-xs text-muted-foreground">
-                                  {formatPrice(p.price)}
-                                  {p.description &&
-                                    ` · ${p.description.slice(0, 50)}${p.description.length > 50 ? "..." : ""}`}
-                                </p>
-                                <StockBadge stock={p.stock} />
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2 ml-3 shrink-0">
-                              <Button
-                                type="button"
-                                size="icon"
-                                variant="ghost"
-                                data-ocid={`admin.product.edit_button.${pi + 1}`}
-                                onClick={() => openEditProduct(p)}
-                                className="h-4 w-4 text-muted-foreground hover:text-foreground"
-                                aria-label="Edit product"
-                              >
-                                <Pencil className="h-2.5 w-2.5" />
-                              </Button>
-                              <Button
-                                type="button"
-                                size="icon"
-                                variant="ghost"
-                                data-ocid={`admin.product.delete_button.${pi + 1}`}
-                                onClick={() => handleDeleteProduct(p)}
-                                disabled={deleteProduct.isPending}
-                                className="h-4 w-4 text-muted-foreground hover:text-destructive"
-                                aria-label="Delete product"
-                              >
-                                <Trash2 className="h-2.5 w-2.5" />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            )}
-          </TabsContent>
-
-          <TabsContent value="categories">
-            <div className="mb-5">
-              <h2 className="font-semibold text-foreground mb-4">Categories</h2>
-              <div className="flex gap-2">
-                <Input
-                  data-ocid="admin.category.input"
-                  value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value)}
-                  placeholder="New category name"
-                  onKeyDown={(e) => e.key === "Enter" && handleAddCategory()}
-                  className="max-w-xs"
-                />
+            <TabsContent value="products">
+              <div className="flex justify-between items-center mb-5">
+                <h2 className="font-semibold text-foreground">
+                  All Products
+                  {products && (
+                    <span className="ml-2 text-muted-foreground font-normal text-sm">
+                      ({products.length})
+                    </span>
+                  )}
+                </h2>
                 <Button
                   type="button"
-                  data-ocid="admin.category.add_button"
-                  onClick={handleAddCategory}
-                  disabled={addCategory.isPending || !newCategory.trim()}
+                  data-ocid="admin.add_product.open_modal_button"
+                  onClick={openAddProduct}
+                  size="sm"
                   className="bg-primary text-primary-foreground gap-1.5"
                 >
-                  {addCategory.isPending ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <Plus className="h-3.5 w-3.5" />
-                  )}
-                  Add
+                  <Plus className="h-3.5 w-3.5" />
+                  Add Product
                 </Button>
               </div>
-            </div>
 
-            {catsLoading ? (
-              <div
-                data-ocid="admin.categories.loading_state"
-                className="space-y-2"
-              >
-                {[1, 2, 3].map((k) => (
-                  <Skeleton key={k} className="h-12 w-full rounded-lg" />
-                ))}
-              </div>
-            ) : allCategories.length === 0 ? (
-              <div
-                data-ocid="admin.categories.empty_state"
-                className="text-center py-12 border border-dashed border-border rounded-xl text-muted-foreground text-sm"
-              >
-                No categories yet. Add one above.
-              </div>
-            ) : (
-              <div
-                data-ocid="admin.categories.list"
-                className="border border-border rounded-lg divide-y divide-border overflow-hidden"
-              >
-                {allCategories.map((cat, i) => (
-                  <div
-                    key={cat}
-                    data-ocid={`admin.category.item.${i + 1}`}
-                    className="flex items-center justify-between px-4 py-3 hover:bg-muted/20 transition-colors"
-                  >
-                    <span className="text-sm font-medium text-foreground">
-                      {cat}
-                    </span>
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="ghost"
-                      data-ocid={`admin.category.delete_button.${i + 1}`}
-                      onClick={() => handleDeleteCategory(cat)}
-                      disabled={deleteCategory.isPending}
-                      className="h-4 w-4 text-muted-foreground hover:text-destructive"
-                      aria-label={`Delete ${cat}`}
+              {productsLoading ? (
+                <div
+                  data-ocid="admin.products.loading_state"
+                  className="space-y-3"
+                >
+                  {[1, 2, 3].map((k) => (
+                    <Skeleton key={k} className="h-14 w-full rounded-lg" />
+                  ))}
+                </div>
+              ) : !products || products.length === 0 ? (
+                <div
+                  data-ocid="admin.products.empty_state"
+                  className="text-center py-16 border border-dashed border-border rounded-xl text-muted-foreground"
+                >
+                  <p className="text-sm">No products yet.</p>
+                  <p className="text-xs mt-1">
+                    Click &ldquo;Add Product&rdquo; to get started.
+                  </p>
+                </div>
+              ) : (
+                <Accordion type="multiple" className="space-y-2">
+                  {Object.entries(grouped).map(([cat, items], ci) => (
+                    <AccordionItem
+                      key={cat}
+                      value={cat}
+                      className="border border-border rounded-lg overflow-hidden"
+                      data-ocid={`admin.category.panel.${ci + 1}`}
                     >
-                      <Trash2 className="h-2.5 w-2.5" />
-                    </Button>
-                  </div>
-                ))}
+                      <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/40 font-medium">
+                        <span className="flex items-center gap-2">
+                          {cat}
+                          <Badge
+                            variant="outline"
+                            className="text-xs font-normal"
+                          >
+                            {items.length}
+                          </Badge>
+                        </span>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-0 pb-0">
+                        <div className="divide-y divide-border">
+                          {items.map((p, pi) => (
+                            <div
+                              key={p.id.toString()}
+                              data-ocid={`admin.product.item.${pi + 1}`}
+                              className="flex items-center justify-between px-4 py-3 hover:bg-muted/20 transition-colors"
+                            >
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium text-foreground truncate">
+                                  {p.name}
+                                </p>
+                                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                  <p className="text-xs text-muted-foreground">
+                                    {formatPrice(p.price)}
+                                    {p.description &&
+                                      ` · ${p.description.slice(0, 50)}${p.description.length > 50 ? "..." : ""}`}
+                                  </p>
+                                  <StockBadge stock={p.stock} />
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 ml-3 shrink-0">
+                                <Button
+                                  type="button"
+                                  size="icon"
+                                  variant="ghost"
+                                  data-ocid={`admin.product.edit_button.${pi + 1}`}
+                                  onClick={() => openEditProduct(p)}
+                                  className="h-4 w-4 text-muted-foreground hover:text-foreground"
+                                  aria-label="Edit product"
+                                >
+                                  <Pencil className="h-2.5 w-2.5" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="icon"
+                                  variant="ghost"
+                                  data-ocid={`admin.product.delete_button.${pi + 1}`}
+                                  onClick={() => handleDeleteProduct(p)}
+                                  disabled={deleteProduct.isPending}
+                                  className="h-4 w-4 text-muted-foreground hover:text-destructive"
+                                  aria-label="Delete product"
+                                >
+                                  <Trash2 className="h-2.5 w-2.5" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              )}
+            </TabsContent>
+
+            <TabsContent value="categories">
+              <div className="mb-5">
+                <h2 className="font-semibold text-foreground mb-4">
+                  Categories
+                </h2>
+                <div className="flex gap-2">
+                  <Input
+                    data-ocid="admin.category.input"
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    placeholder="New category name"
+                    onKeyDown={(e) => e.key === "Enter" && handleAddCategory()}
+                    className="max-w-xs"
+                  />
+                  <Button
+                    type="button"
+                    data-ocid="admin.category.add_button"
+                    onClick={handleAddCategory}
+                    disabled={addCategory.isPending || !newCategory.trim()}
+                    className="bg-primary text-primary-foreground gap-1.5"
+                  >
+                    {addCategory.isPending ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Plus className="h-3.5 w-3.5" />
+                    )}
+                    Add
+                  </Button>
+                </div>
               </div>
-            )}
-          </TabsContent>
 
-          <TabsContent value="offers">
-            <OffersTab />
-          </TabsContent>
+              {catsLoading ? (
+                <div
+                  data-ocid="admin.categories.loading_state"
+                  className="space-y-2"
+                >
+                  {[1, 2, 3].map((k) => (
+                    <Skeleton key={k} className="h-12 w-full rounded-lg" />
+                  ))}
+                </div>
+              ) : allCategories.length === 0 ? (
+                <div
+                  data-ocid="admin.categories.empty_state"
+                  className="text-center py-12 border border-dashed border-border rounded-xl text-muted-foreground text-sm"
+                >
+                  No categories yet. Add one above.
+                </div>
+              ) : (
+                <div
+                  data-ocid="admin.categories.list"
+                  className="border border-border rounded-lg divide-y divide-border overflow-hidden"
+                >
+                  {allCategories.map((cat, i) => (
+                    <div
+                      key={cat}
+                      data-ocid={`admin.category.item.${i + 1}`}
+                      className="flex items-center justify-between px-4 py-3 hover:bg-muted/20 transition-colors"
+                    >
+                      <span className="text-sm font-medium text-foreground">
+                        {cat}
+                      </span>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        data-ocid={`admin.category.delete_button.${i + 1}`}
+                        onClick={() => handleDeleteCategory(cat)}
+                        disabled={deleteCategory.isPending}
+                        className="h-4 w-4 text-muted-foreground hover:text-destructive"
+                        aria-label={`Delete ${cat}`}
+                      >
+                        <Trash2 className="h-2.5 w-2.5" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
 
-          <TabsContent value="settings">
-            <SettingsTab />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="offers">
+              <OffersTab />
+            </TabsContent>
+
+            <TabsContent value="settings">
+              <SettingsTab />
+            </TabsContent>
+          </Tabs>
+        </div>
       </main>
 
       <ProductDialog
