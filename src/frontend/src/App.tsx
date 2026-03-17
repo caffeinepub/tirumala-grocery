@@ -3,9 +3,11 @@ import { useState } from "react";
 import { AboutSection } from "./components/AboutSection";
 import { AdminPage } from "./components/AdminPage";
 import { CartDrawer } from "./components/CartDrawer";
+import { CategoryIcons } from "./components/CategoryIcons";
 import { Footer } from "./components/Footer";
 import { Hero } from "./components/Hero";
 import { Navbar } from "./components/Navbar";
+import { OffersBanner } from "./components/OffersBanner";
 import { ProductGrid } from "./components/ProductGrid";
 import { useGetCart } from "./hooks/useQueries";
 
@@ -26,6 +28,7 @@ export default function App() {
   const [isAdminDevice, setIsAdminDevice] = useState(
     () => localStorage.getItem("tirumala_admin_device") === "true",
   );
+  const [filterCategory, setFilterCategory] = useState<string | null>(null);
 
   function scrollTo(id: string) {
     const el = document.getElementById(id);
@@ -66,9 +69,17 @@ export default function App() {
         isAdminDevice={isAdminDevice}
         onAdminActivate={handleAdminActivate}
       />
+      <CategoryIcons
+        selectedCategory={filterCategory}
+        onSelectCategory={setFilterCategory}
+      />
+      <OffersBanner />
       <main className="flex-1">
         <Hero onShopNow={() => scrollTo("products")} />
-        <ProductGrid />
+        <ProductGrid
+          filterCategory={filterCategory}
+          onClearFilter={() => setFilterCategory(null)}
+        />
         <AboutSection />
       </main>
       <Footer />

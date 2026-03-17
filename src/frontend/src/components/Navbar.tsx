@@ -109,7 +109,7 @@ export function Navbar({
               onClick={onAdminClick}
               className="hidden md:flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
             >
-              <Settings className="h-3 w-3" />
+              <Settings className="h-2.5 w-2.5" />
               Admin
             </Button>
           )}
@@ -123,9 +123,9 @@ export function Navbar({
             className="relative"
             aria-label={`Cart, ${cartCount} items`}
           >
-            <ShoppingCart className="h-4 w-4" />
+            <ShoppingCart className="h-2.5 w-2.5" />
             {cartCount > 0 && (
-              <Badge className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center p-0 text-xs bg-primary text-primary-foreground">
+              <Badge className="absolute -top-1 -right-1 h-3 w-3 flex items-center justify-center p-0 text-xs bg-primary text-primary-foreground">
                 {cartCount}
               </Badge>
             )}
@@ -140,9 +140,9 @@ export function Navbar({
             aria-label="Toggle menu"
           >
             {mobileOpen ? (
-              <X className="h-4 w-4" />
+              <X className="h-2.5 w-2.5" />
             ) : (
-              <Menu className="h-4 w-4" />
+              <Menu className="h-2.5 w-2.5" />
             )}
           </Button>
         </div>
@@ -182,7 +182,7 @@ export function Navbar({
                   }}
                   className="text-left px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex items-center gap-1.5"
                 >
-                  <Settings className="h-3 w-3" />
+                  <Settings className="h-2.5 w-2.5" />
                   Admin
                 </button>
               )}

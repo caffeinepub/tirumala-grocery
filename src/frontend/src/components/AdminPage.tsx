@@ -48,6 +48,7 @@ import {
   useGetAllProducts,
   useUpdateProduct,
 } from "../hooks/useQueries";
+import type { Offer } from "./OffersBanner";
 
 const DEFAULT_CATEGORIES = [
   "Fruits",
@@ -58,6 +59,7 @@ const DEFAULT_CATEGORIES = [
 ];
 
 export const BANK_DETAILS_KEY = "tg_bank_details";
+export const OFFERS_KEY = "tg_offers";
 
 export interface BankDetails {
   accountHolder: string;
@@ -79,6 +81,18 @@ export function getBankDetails(): BankDetails {
     bankName: "",
     upiId: "",
   };
+}
+
+function getOffers(): Offer[] {
+  try {
+    const raw = localStorage.getItem(OFFERS_KEY);
+    if (raw) return JSON.parse(raw) as Offer[];
+  } catch {}
+  return [];
+}
+
+function saveOffers(offers: Offer[]) {
+  localStorage.setItem(OFFERS_KEY, JSON.stringify(offers));
 }
 
 interface ProductFormData {
@@ -165,7 +179,6 @@ function ProductDialog({
       toast.error("Please fill in all required fields");
       return;
     }
-    // Store price directly in rupees as entered
     const price = BigInt(
       Math.round(Math.abs(Number.parseFloat(form.price) || 0)),
     );
@@ -317,6 +330,267 @@ function ProductDialog({
   );
 }
 
+// ─── Offers Tab ────────────────────────────────────────────────────────────────
+
+const EMPTY_OFFER_FORM = {
+  title: "",
+  description: "",
+  badge: "",
+  color: "saffron",
+};
+
+function OffersTab() {
+  const [offers, setOffers] = useState<Offer[]>(() => getOffers());
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState(EMPTY_OFFER_FORM);
+
+  function handleFormChange(field: string, value: string) {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  }
+
+  function openAddForm() {
+    setEditingId(null);
+    setForm(EMPTY_OFFER_FORM);
+    setShowForm(true);
+  }
+
+  function openEditForm(offer: Offer) {
+    setEditingId(offer.id);
+    setForm({
+      title: offer.title,
+      description: offer.description,
+      badge: offer.badge,
+      color: offer.color,
+    });
+    setShowForm(true);
+  }
+
+  function handleSave() {
+    if (!form.title.trim()) {
+      toast.error("Title is required");
+      return;
+    }
+    let updated: Offer[];
+    if (editingId) {
+      updated = offers.map((o) =>
+        o.id === editingId
+          ? {
+              ...o,
+              title: form.title.trim(),
+              description: form.description.trim(),
+              badge: form.badge.trim() || "OFFER",
+              color: form.color,
+            }
+          : o,
+      );
+    } else {
+      const newOffer: Offer = {
+        id: `offer_${Date.now()}`,
+        title: form.title.trim(),
+        description: form.description.trim(),
+        badge: form.badge.trim() || "OFFER",
+        color: form.color,
+      };
+      updated = [...offers, newOffer];
+    }
+    saveOffers(updated);
+    setOffers(updated);
+    setShowForm(false);
+    setEditingId(null);
+    toast.success(editingId ? "Offer updated" : "Offer added");
+  }
+
+  function handleDelete(id: string) {
+    const updated = offers.filter((o) => o.id !== id);
+    saveOffers(updated);
+    setOffers(updated);
+    toast.success("Offer removed");
+  }
+
+  function handleCancel() {
+    setShowForm(false);
+    setEditingId(null);
+  }
+
+  const COLOR_LABELS: Record<string, string> = {
+    saffron: "Saffron / Orange",
+    green: "Green",
+    red: "Red",
+    blue: "Blue",
+  };
+
+  return (
+    <div className="space-y-5 max-w-lg">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-semibold text-foreground">
+            Festival &amp; Offers
+          </h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Offers shown in the scrolling banner on the homepage.
+          </p>
+        </div>
+        {!showForm && (
+          <Button
+            type="button"
+            data-ocid="admin.offer.add_button"
+            size="sm"
+            onClick={openAddForm}
+            className="bg-primary text-primary-foreground gap-1.5"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Add Offer
+          </Button>
+        )}
+      </div>
+
+      {showForm && (
+        <div className="border border-amber-200 rounded-xl bg-amber-50/60 p-4 space-y-4">
+          <h3 className="text-sm font-semibold text-stone-700">
+            {editingId ? "Edit Offer" : "New Offer"}
+          </h3>
+          <div className="space-y-1.5">
+            <Label htmlFor="offer-title">Title *</Label>
+            <Input
+              id="offer-title"
+              data-ocid="admin.offer.title.input"
+              value={form.title}
+              onChange={(e) => handleFormChange("title", e.target.value)}
+              placeholder="e.g. Diwali Special — 20% off on Dry Fruits"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="offer-desc">Description</Label>
+            <Textarea
+              id="offer-desc"
+              data-ocid="admin.offer.description.textarea"
+              value={form.description}
+              onChange={(e) => handleFormChange("description", e.target.value)}
+              placeholder="e.g. Valid till October 31st"
+              rows={2}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="offer-badge">Badge Text</Label>
+              <Input
+                id="offer-badge"
+                data-ocid="admin.offer.badge.input"
+                value={form.badge}
+                onChange={(e) => handleFormChange("badge", e.target.value)}
+                placeholder="e.g. FESTIVAL"
+                maxLength={16}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Color Theme</Label>
+              <Select
+                value={form.color}
+                onValueChange={(v) => handleFormChange("color", v)}
+              >
+                <SelectTrigger data-ocid="admin.offer.color.select">
+                  <SelectValue placeholder="Pick color" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(COLOR_LABELS).map(([val, label]) => (
+                    <SelectItem key={val} value={val}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="flex gap-2 pt-1">
+            <Button
+              type="button"
+              data-ocid="admin.offer.save_button"
+              onClick={handleSave}
+              className="bg-primary text-primary-foreground"
+              size="sm"
+            >
+              {editingId ? "Update Offer" : "Save Offer"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              data-ocid="admin.offer.cancel_button"
+              onClick={handleCancel}
+              size="sm"
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {offers.length === 0 && !showForm ? (
+        <div
+          data-ocid="admin.offers.empty_state"
+          className="text-center py-12 border border-dashed border-amber-200 rounded-xl text-muted-foreground bg-amber-50/30"
+        >
+          <p className="text-sm">No offers yet.</p>
+          <p className="text-xs mt-1">
+            Add a festival or promotional offer above.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {offers.map((offer, i) => (
+            <div
+              key={offer.id}
+              data-ocid={`admin.offer.item.${i + 1}`}
+              className="flex items-center justify-between px-4 py-3 border border-border rounded-lg hover:bg-muted/20 transition-colors"
+            >
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold tracking-widest uppercase bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full shrink-0">
+                    {offer.badge || "OFFER"}
+                  </span>
+                  <p className="text-sm font-medium text-foreground truncate">
+                    {offer.title}
+                  </p>
+                </div>
+                {offer.description && (
+                  <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                    {offer.description}
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-1.5 ml-3 shrink-0">
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => openEditForm(offer)}
+                  className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                  aria-label="Edit offer"
+                >
+                  <Pencil className="h-3 w-3" />
+                </Button>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  data-ocid={`admin.offer.delete_button.${i + 1}`}
+                  onClick={() => handleDelete(offer.id)}
+                  className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                  aria-label="Delete offer"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Settings Tab ──────────────────────────────────────────────────────────────
+
 function SettingsTab() {
   const [currentPin, setCurrentPin] = useState("");
   const [newPin, setNewPin] = useState("");
@@ -365,8 +639,8 @@ function SettingsTab() {
       {/* PIN section */}
       <div>
         <div className="flex items-center gap-2 mb-6">
-          <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center">
-            <KeyRound className="h-3.5 w-3.5 text-primary" />
+          <div className="h-3 w-3 rounded-full bg-primary/10 flex items-center justify-center">
+            <KeyRound className="h-2.5 w-2.5 text-primary" />
           </div>
           <div>
             <h2 className="font-semibold text-foreground text-sm">
@@ -446,8 +720,8 @@ function SettingsTab() {
       {/* Bank / Payment Details section */}
       <div>
         <div className="flex items-center gap-2 mb-6">
-          <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center">
-            <CreditCard className="h-3.5 w-3.5 text-primary" />
+          <div className="h-3 w-3 rounded-full bg-primary/10 flex items-center justify-center">
+            <CreditCard className="h-2.5 w-2.5 text-primary" />
           </div>
           <div>
             <h2 className="font-semibold text-foreground text-sm">
@@ -475,7 +749,7 @@ function SettingsTab() {
 
           <div className="space-y-1.5">
             <Label htmlFor="bank-name">
-              <Building2 className="inline h-3 w-3 mr-1" />
+              <Building2 className="inline h-2 w-2 mr-1" />
               Bank Name
             </Label>
             <Input
@@ -537,6 +811,8 @@ function SettingsTab() {
     </div>
   );
 }
+
+// ─── Admin Page ────────────────────────────────────────────────────────────────
 
 export function AdminPage({
   onBack,
@@ -638,7 +914,7 @@ export function AdminPage({
                 onClick={onDeactivateAdmin}
                 className="text-xs text-destructive border-destructive/40 hover:bg-destructive/10 hover:text-destructive gap-1.5"
               >
-                <ShieldOff className="h-3 w-3" />
+                <ShieldOff className="h-2.5 w-2.5" />
                 Remove admin access
               </Button>
             )}
@@ -663,6 +939,9 @@ export function AdminPage({
             </TabsTrigger>
             <TabsTrigger value="categories" data-ocid="admin.categories.tab">
               Categories
+            </TabsTrigger>
+            <TabsTrigger value="offers" data-ocid="admin.offers.tab">
+              Offers
             </TabsTrigger>
             <TabsTrigger value="settings" data-ocid="admin.settings.tab">
               Settings
@@ -758,10 +1037,10 @@ export function AdminPage({
                                 variant="ghost"
                                 data-ocid={`admin.product.edit_button.${pi + 1}`}
                                 onClick={() => openEditProduct(p)}
-                                className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                                className="h-4 w-4 text-muted-foreground hover:text-foreground"
                                 aria-label="Edit product"
                               >
-                                <Pencil className="h-3 w-3" />
+                                <Pencil className="h-2.5 w-2.5" />
                               </Button>
                               <Button
                                 type="button"
@@ -770,10 +1049,10 @@ export function AdminPage({
                                 data-ocid={`admin.product.delete_button.${pi + 1}`}
                                 onClick={() => handleDeleteProduct(p)}
                                 disabled={deleteProduct.isPending}
-                                className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                                className="h-4 w-4 text-muted-foreground hover:text-destructive"
                                 aria-label="Delete product"
                               >
-                                <Trash2 className="h-3 w-3" />
+                                <Trash2 className="h-2.5 w-2.5" />
                               </Button>
                             </div>
                           </div>
@@ -852,15 +1131,19 @@ export function AdminPage({
                       data-ocid={`admin.category.delete_button.${i + 1}`}
                       onClick={() => handleDeleteCategory(cat)}
                       disabled={deleteCategory.isPending}
-                      className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                      className="h-4 w-4 text-muted-foreground hover:text-destructive"
                       aria-label={`Delete ${cat}`}
                     >
-                      <Trash2 className="h-3 w-3" />
+                      <Trash2 className="h-2.5 w-2.5" />
                     </Button>
                   </div>
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="offers">
+            <OffersTab />
           </TabsContent>
 
           <TabsContent value="settings">

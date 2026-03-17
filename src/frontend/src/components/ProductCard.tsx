@@ -4,30 +4,15 @@ import { ShoppingCart } from "lucide-react";
 import { motion } from "motion/react";
 import type { Product } from "../backend.d";
 
+function formatPrice(price: bigint) {
+  return `\u20B9${Number(price).toLocaleString("en-IN")}`;
+}
+
 interface ProductCardProps {
   product: Product;
   index: number;
   onAddToCart: (id: bigint) => void;
   isAdding: boolean;
-}
-
-const CATEGORY_COLORS: Record<string, string> = {
-  ceramics: "bg-amber-100 text-amber-800",
-  textiles: "bg-green-100 text-green-800",
-  candles: "bg-orange-100 text-orange-800",
-  jewelry: "bg-pink-100 text-pink-800",
-  kitchen: "bg-yellow-100 text-yellow-800",
-  art: "bg-purple-100 text-purple-800",
-  default: "bg-muted text-muted-foreground",
-};
-
-function getCategoryColor(cat: string) {
-  const key = cat.toLowerCase();
-  return CATEGORY_COLORS[key] ?? CATEGORY_COLORS.default;
-}
-
-function formatPrice(price: bigint) {
-  return `\u20B9${Number(price).toLocaleString("en-IN")}`;
 }
 
 export function ProductCard({
@@ -42,68 +27,55 @@ export function ProductCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: (index % 6) * 0.06 }}
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.3, delay: (index % 10) * 0.04 }}
       data-ocid={`products.item.${index + 1}`}
-      className="group bg-card rounded-xl overflow-hidden border border-border hover:shadow-warm transition-shadow duration-300 flex flex-col"
+      className="group bg-card rounded-xl overflow-hidden border border-border hover:shadow-md hover:border-primary/30 transition-all duration-200 flex flex-col"
     >
-      {/* Image / Placeholder */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+      {/* Square image/placeholder */}
+      <div className="relative aspect-square overflow-hidden bg-muted">
         {hasImage ? (
           <img
             src={product.imageUrl}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-400"
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-gradient-to-br from-accent/30 to-secondary/30">
-            <span className="font-display text-3xl font-bold text-foreground/20 text-center">
+          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-accent/40 to-secondary/40">
+            <span className="font-display text-xl font-bold text-foreground/25">
               {product.name.slice(0, 2).toUpperCase()}
-            </span>
-            <span className="mt-2 text-xs font-medium text-muted-foreground text-center leading-tight">
-              {product.name}
             </span>
           </div>
         )}
 
         {/* Out of stock overlay */}
         {outOfStock && (
-          <div className="absolute inset-0 bg-background/60 flex items-center justify-center">
-            <Badge className="bg-destructive text-destructive-foreground text-xs font-semibold px-3 py-1">
+          <div className="absolute inset-0 bg-background/70 flex items-center justify-center">
+            <Badge className="bg-destructive text-destructive-foreground text-[9px] font-semibold px-1.5 py-0.5">
               Out of Stock
             </Badge>
           </div>
         )}
 
-        {/* Category badge overlay */}
-        <div className="absolute top-3 left-3">
-          <span
-            className={`text-xs font-semibold px-2 py-1 rounded-full ${getCategoryColor(product.category)}`}
-          >
-            {product.category}
-          </span>
-        </div>
+        {/* Low stock badge */}
+        {lowStock && (
+          <div className="absolute bottom-1 left-1">
+            <span className="text-[8px] font-semibold bg-amber-100 text-amber-700 px-1 py-0.5 rounded-full">
+              {product.stock.toString()} left
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Content */}
-      <div className="p-4 flex flex-col flex-1">
-        <h3 className="font-display font-semibold text-base text-foreground mb-1 leading-snug">
+      <div className="p-1.5 flex flex-col flex-1 gap-1">
+        <p className="text-[11px] font-semibold text-foreground leading-tight line-clamp-2 min-h-[1.75rem]">
           {product.name}
-        </h3>
-        <p className="text-sm text-muted-foreground mb-3 flex-1 line-clamp-2">
-          {product.description}
         </p>
 
-        {/* Low stock indicator */}
-        {lowStock && (
-          <p className="text-xs font-medium text-amber-600 mb-2">
-            Only {product.stock.toString()} left!
-          </p>
-        )}
-
-        <div className="flex items-center justify-between">
-          <span className="font-display font-bold text-lg text-foreground">
+        <div className="flex items-center justify-between gap-1 mt-auto">
+          <span className="text-xs font-bold text-foreground">
             {formatPrice(product.price)}
           </span>
           <Button
@@ -111,10 +83,10 @@ export function ProductCard({
             size="sm"
             onClick={() => onAddToCart(product.id)}
             disabled={isAdding || outOfStock}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="h-6 px-1.5 text-[10px] bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-0.5"
           >
-            <ShoppingCart className="h-3 w-3 mr-1.5" />
-            {outOfStock ? "Unavailable" : "Add"}
+            <ShoppingCart className="h-3 w-3" />
+            {outOfStock ? "N/A" : "Add"}
           </Button>
         </div>
       </div>
