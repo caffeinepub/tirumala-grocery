@@ -53,6 +53,9 @@ export function ProductGrid({
       )
     : (products as Product[] | undefined);
 
+  const gridClass =
+    "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2";
+
   return (
     <section id="products" className="py-10 container mx-auto px-3 md:px-6">
       <motion.div
@@ -93,22 +96,18 @@ export function ProductGrid({
       )}
 
       {isLoading ? (
-        <div
-          data-ocid="products.loading_state"
-          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3"
-        >
+        <div data-ocid="products.loading_state" className={gridClass}>
           {SKELETON_KEYS.map((k) => (
             <div
               key={k}
-              className="rounded-xl overflow-hidden border border-border"
+              className="rounded-lg overflow-hidden border border-border"
             >
               <Skeleton className="aspect-square w-full" />
-              <div className="p-2 space-y-1.5">
-                <Skeleton className="h-3 w-3/4" />
-                <Skeleton className="h-3 w-1/2" />
-                <div className="flex justify-between pt-1">
+              <div className="p-1 space-y-1">
+                <Skeleton className="h-2.5 w-3/4" />
+                <div className="flex justify-between pt-0.5">
+                  <Skeleton className="h-4 w-8" />
                   <Skeleton className="h-5 w-10" />
-                  <Skeleton className="h-7 w-14" />
                 </div>
               </div>
             </div>
@@ -150,10 +149,7 @@ export function ProductGrid({
           </p>
         </div>
       ) : (
-        <div
-          data-ocid="products.list"
-          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3"
-        >
+        <div data-ocid="products.list" className={gridClass}>
           {filtered.map((product, i) => (
             <ProductCard
               key={product.id.toString()}

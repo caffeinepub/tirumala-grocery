@@ -31,7 +31,7 @@ export function ProductCard({
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3, delay: (index % 10) * 0.04 }}
       data-ocid={`products.item.${index + 1}`}
-      className="group bg-card rounded-xl overflow-hidden border border-border hover:shadow-md hover:border-primary/30 transition-all duration-200 flex flex-col"
+      className="group bg-card rounded-lg overflow-hidden border border-border hover:shadow-md hover:border-primary/30 transition-all duration-200 flex flex-col"
     >
       {/* Square image/placeholder */}
       <div className="relative aspect-square overflow-hidden bg-muted">
@@ -43,25 +43,23 @@ export function ProductCard({
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-accent/40 to-secondary/40">
-            <span className="font-display text-xl font-bold text-foreground/25">
+            <span className="font-display text-base font-bold text-foreground/25">
               {product.name.slice(0, 2).toUpperCase()}
             </span>
           </div>
         )}
 
-        {/* Out of stock overlay */}
         {outOfStock && (
           <div className="absolute inset-0 bg-background/70 flex items-center justify-center">
-            <Badge className="bg-destructive text-destructive-foreground text-[9px] font-semibold px-1.5 py-0.5">
+            <Badge className="bg-destructive text-destructive-foreground text-[8px] font-semibold px-1 py-0.5">
               Out of Stock
             </Badge>
           </div>
         )}
 
-        {/* Low stock badge */}
         {lowStock && (
-          <div className="absolute bottom-1 left-1">
-            <span className="text-[8px] font-semibold bg-amber-100 text-amber-700 px-1 py-0.5 rounded-full">
+          <div className="absolute bottom-0.5 left-0.5">
+            <span className="text-[7px] font-semibold bg-amber-100 text-amber-700 px-1 py-0.5 rounded-full">
               {product.stock.toString()} left
             </span>
           </div>
@@ -69,13 +67,13 @@ export function ProductCard({
       </div>
 
       {/* Content */}
-      <div className="p-1.5 flex flex-col flex-1 gap-1">
-        <p className="text-[11px] font-semibold text-foreground leading-tight line-clamp-2 min-h-[1.75rem]">
+      <div className="p-1 flex flex-col flex-1 gap-0.5">
+        <p className="text-[10px] font-semibold text-foreground leading-tight line-clamp-2 min-h-[1.5rem]">
           {product.name}
         </p>
 
-        <div className="flex items-center justify-between gap-1 mt-auto">
-          <span className="text-xs font-bold text-foreground">
+        <div className="flex items-center justify-between gap-0.5 mt-auto">
+          <span className="text-[10px] font-bold text-foreground">
             {formatPrice(product.price)}
           </span>
           <Button
@@ -83,9 +81,9 @@ export function ProductCard({
             size="sm"
             onClick={() => onAddToCart(product.id)}
             disabled={isAdding || outOfStock}
-            className="h-6 px-1.5 text-[10px] bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-0.5"
+            className="h-5 px-1 text-[9px] bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-0.5"
           >
-            <ShoppingCart className="h-3 w-3" />
+            <ShoppingCart className="h-2.5 w-2.5" />
             {outOfStock ? "N/A" : "Add"}
           </Button>
         </div>
