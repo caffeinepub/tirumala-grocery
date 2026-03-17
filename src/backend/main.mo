@@ -17,7 +17,7 @@ actor {
     category : Text;
   };
 
-  // Extended type returned to clients (includes stock)
+  // Extended type returned to clients (includes stock, unit, quantityLabel)
   type ProductWithStock = {
     id : Nat;
     name : Text;
@@ -26,6 +26,8 @@ actor {
     imageUrl : Text;
     category : Text;
     stock : Nat;
+    unit : Text;        // "kg" or "pieces"
+    quantityLabel : Text; // e.g. "500g", "1kg", "12 pieces"
   };
 
   // Stable storage
@@ -35,12 +37,17 @@ actor {
   stable var stableCarts : [(Principal, [Nat])] = [];
   stable var stableStocks : [(Nat, Nat)] = [];  // productId -> stock
   stable var dairySeedDone : Bool = false;
+  stable var spiceSeedDone : Bool = false;
+  stable var stableUnits : [(Nat, Text)] = [];       // productId -> unit
+  stable var stableQuantityLabels : [(Nat, Text)] = []; // productId -> quantityLabel
 
   // In-memory working maps
   let products = Map.empty<Nat, Product>();
   let categories = Map.empty<Text, ()>();
   let carts = Map.empty<Principal, [Nat]>();
   let stocks = Map.empty<Nat, Nat>();
+  let units = Map.empty<Nat, Text>();
+  let quantityLabels = Map.empty<Nat, Text>();
 
   // Initialize from stable storage on every startup
   for ((id, p) in stableProducts.values()) {
@@ -61,11 +68,25 @@ actor {
   for ((id, s) in stableStocks.values()) {
     stocks.add(id, s);
   };
+  for ((id, u) in stableUnits.values()) {
+    units.add(id, u);
+  };
+  for ((id, ql) in stableQuantityLabels.values()) {
+    quantityLabels.add(id, ql);
+  };
 
-  // Helper to merge Product + stock into ProductWithStock
+  // Helper to merge Product + stock + unit + quantityLabel into ProductWithStock
   func withStock(p : Product) : ProductWithStock {
     let s = switch (stocks.get(p.id)) {
       case (null) { 0 };
+      case (?v) { v };
+    };
+    let u = switch (units.get(p.id)) {
+      case (null) { "pieces" };
+      case (?v) { v };
+    };
+    let ql = switch (quantityLabels.get(p.id)) {
+      case (null) { "" };
       case (?v) { v };
     };
     {
@@ -76,6 +97,8 @@ actor {
       imageUrl = p.imageUrl;
       category = p.category;
       stock = s;
+      unit = u;
+      quantityLabel = ql;
     };
   };
 
@@ -128,16 +151,54 @@ actor {
     dairySeedDone := true;
   };
 
+  // Seed spice products (100g each)
+  if (not spiceSeedDone) {
+    switch (categories.get("Spices")) {
+      case (null) { categories.add("Spices", ()) };
+      case (?_) {};
+    };
+    // (name, description, price, stock)
+    let spiceItems : [(Text, Text, Nat, Nat)] = [
+      ("Finger Millet (Ragulu)", "Nutritious finger millet, rich in calcium and fibre", 15, 50),
+      ("Kidney Beans (Cikkadu ginjulu)", "Premium red kidney beans, high in protein and fibre", 20, 50),
+      ("Aniseed (Sopu)", "Aromatic anise seeds with a sweet, liquorice-like flavour", 25, 50),
+      ("Asafoetida (Inguva)", "Pure hing / asafoetida, a pungent essential spice", 60, 50),
+      ("Bay Leaf (Masala Aku)", "Dried bay leaves for biryanis, curries, and rice dishes", 30, 50),
+      ("Black Pepper (Miriyalu)", "Whole black pepper corns, sharp and aromatic", 70, 50),
+      ("Cardamom (Elakulu)", "Green cardamom pods, fragrant and flavourful", 120, 50),
+      ("Cinnamon (Dalchini)", "Aromatic cinnamon sticks / dalchina chekka for cooking", 40, 50),
+      ("Cloves (Lavangam)", "Whole cloves with intense aroma, for masalas and rice", 80, 50)
+    ];
+    for ((name, desc, price, stock) in spiceItems.values()) {
+      let p : Product = {
+        id = nextProductId;
+        name;
+        description = desc;
+        price;
+        imageUrl = "";
+        category = "Spices";
+      };
+      products.add(nextProductId, p);
+      stocks.add(nextProductId, stock);
+      units.add(nextProductId, "kg");
+      quantityLabels.add(nextProductId, "100g");
+      nextProductId += 1;
+    };
+    spiceSeedDone := true;
+  };
+
   // Save to stable storage before upgrade
   system func preupgrade() {
     stableProducts := products.entries().toArray();
     stableCategories := categories.keys().toArray();
     stableCarts := carts.entries().toArray();
     stableStocks := stocks.entries().toArray();
+    stableUnits := units.entries().toArray();
+    stableQuantityLabels := quantityLabels.entries().toArray();
   };
 
   // Products
-  public shared func addProduct(name : Text, description : Text, price : Nat, category : Text, imageUrl : Text, stock : Nat) : async ProductWithStock {
+  public shared func addProduct(name : Text, description : Text, price : Nat, category : Text, imageUrl : Text, stock : Nat, unit : Text, quantityLabel : Text) : async ProductWithStock {
     switch (categories.get(category)) {
       case (null) { Runtime.trap("Category " # category # " does not exist.") };
       case (?_) {};
@@ -152,11 +213,13 @@ actor {
     };
     products.add(nextProductId, newProduct);
     stocks.add(nextProductId, stock);
+    units.add(nextProductId, unit);
+    quantityLabels.add(nextProductId, quantityLabel);
     nextProductId += 1;
     withStock(newProduct);
   };
 
-  public shared func updateProduct(id : Nat, name : Text, description : Text, price : Nat, category : Text, imageUrl : Text, stock : Nat) : async ProductWithStock {
+  public shared func updateProduct(id : Nat, name : Text, description : Text, price : Nat, category : Text, imageUrl : Text, stock : Nat, unit : Text, quantityLabel : Text) : async ProductWithStock {
     switch (products.get(id)) {
       case (null) { Runtime.trap("Product with id " # id.toText() # " does not exist.") };
       case (?_) {};
@@ -175,6 +238,8 @@ actor {
     };
     products.add(id, updatedProduct);
     stocks.add(id, stock);
+    units.add(id, unit);
+    quantityLabels.add(id, quantityLabel);
     updatedProduct |> withStock(_);
   };
 
@@ -184,6 +249,8 @@ actor {
       case (?_) {
         products.remove(id);
         stocks.remove(id);
+        units.remove(id);
+        quantityLabels.remove(id);
       };
     };
   };

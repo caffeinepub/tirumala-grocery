@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Settings, X } from "lucide-react";
+import { PackageSearch, X } from "lucide-react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
 import type { Product } from "../backend.d";
@@ -119,14 +119,14 @@ export function ProductGrid({
           className="text-center py-20 border border-dashed border-border rounded-2xl text-muted-foreground"
         >
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-muted mb-4">
-            <Settings className="h-5 w-5" />
+            <PackageSearch className="h-5 w-5" />
           </div>
           <p className="text-base font-medium mb-1">
             {filterCategory
               ? `No ${filterCategory} products found`
-              : "No products yet"}
+              : "No products to display"}
           </p>
-          <p className="text-sm">
+          <p className="text-sm max-w-xs mx-auto">
             {filterCategory ? (
               <span>
                 Try{" "}
@@ -141,9 +141,9 @@ export function ProductGrid({
               </span>
             ) : (
               <span>
-                Visit the{" "}
-                <span className="font-medium text-foreground">Admin Panel</span>{" "}
-                to add products to your store.
+                Products are loading — if this persists, check the{" "}
+                <span className="font-medium text-foreground">Admin panel</span>
+                .
               </span>
             )}
           </p>

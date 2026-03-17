@@ -15,10 +15,12 @@ export interface Product {
     category: string;
     price: bigint;
     stock: bigint;
+    unit: string;
+    quantityLabel: string;
 }
 export interface backendInterface {
     addCategory(name: string): Promise<void>;
-    addProduct(name: string, description: string, price: bigint, category: string, imageUrl: string, stock: bigint): Promise<Product>;
+    addProduct(name: string, description: string, price: bigint, category: string, imageUrl: string, stock: bigint, unit: string, quantityLabel: string): Promise<Product>;
     addToCart(productId: bigint): Promise<void>;
     clearCart(): Promise<void>;
     deleteCategory(name: string): Promise<void>;
@@ -29,5 +31,5 @@ export interface backendInterface {
     getProduct(id: bigint): Promise<Product>;
     placeOrder(): Promise<void>;
     removeFromCart(productId: bigint): Promise<void>;
-    updateProduct(id: bigint, name: string, description: string, price: bigint, category: string, imageUrl: string, stock: bigint): Promise<Product>;
+    updateProduct(id: bigint, name: string, description: string, price: bigint, category: string, imageUrl: string, stock: bigint, unit: string, quantityLabel: string): Promise<Product>;
 }

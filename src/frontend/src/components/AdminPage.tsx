@@ -34,6 +34,7 @@ import {
   Pencil,
   Plus,
   ShieldOff,
+  ShoppingBag,
   Trash2,
 } from "lucide-react";
 import { useState } from "react";
@@ -102,6 +103,8 @@ interface ProductFormData {
   category: string;
   imageUrl: string;
   stock: string;
+  unit: string;
+  quantityLabel: string;
 }
 
 function formatPrice(price: bigint) {
@@ -117,6 +120,8 @@ function productToForm(product?: Product): ProductFormData {
       category: "",
       imageUrl: "",
       stock: "0",
+      unit: "pieces",
+      quantityLabel: "",
     };
   return {
     name: product.name,
@@ -125,6 +130,8 @@ function productToForm(product?: Product): ProductFormData {
     category: product.category,
     imageUrl: product.imageUrl,
     stock: product.stock.toString(),
+    unit: product.unit ?? "pieces",
+    quantityLabel: product.quantityLabel ?? "",
   };
 }
 
@@ -193,6 +200,8 @@ function ProductDialog({
           category: form.category,
           imageUrl: form.imageUrl.trim(),
           stock,
+          unit: form.unit,
+          quantityLabel: form.quantityLabel.trim(),
         });
         toast.success("Product updated successfully");
       } else {
@@ -203,6 +212,8 @@ function ProductDialog({
           category: form.category,
           imageUrl: form.imageUrl.trim(),
           stock,
+          unit: form.unit,
+          quantityLabel: form.quantityLabel.trim(),
         });
         toast.success("Product added successfully");
       }
@@ -287,6 +298,37 @@ function ProductDialog({
               onChange={(e) => handleChange("stock", e.target.value)}
               placeholder="0"
             />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label>Unit *</Label>
+              <Select
+                value={form.unit}
+                onValueChange={(v) => handleChange("unit", v)}
+              >
+                <SelectTrigger data-ocid="admin.product.unit.select">
+                  <SelectValue placeholder="Select unit" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pieces">Pieces (pcs)</SelectItem>
+                  <SelectItem value="kg">Kilograms (kg)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="prod-qty-label">Quantity Label</Label>
+              <Input
+                id="prod-qty-label"
+                data-ocid="admin.product.quantitylabel.input"
+                value={form.quantityLabel}
+                onChange={(e) => handleChange("quantityLabel", e.target.value)}
+                placeholder={
+                  form.unit === "kg"
+                    ? "e.g. 500g, 1kg, 2kg"
+                    : "e.g. 6 pcs, 12 pieces"
+                }
+              />
+            </div>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="prod-img">Image URL (optional)</Label>
@@ -567,7 +609,7 @@ function OffersTab() {
                   className="h-7 w-7 text-muted-foreground hover:text-foreground"
                   aria-label="Edit offer"
                 >
-                  <Pencil className="h-3 w-3" />
+                  <Pencil className="h-3.5 w-3.5" />
                 </Button>
                 <Button
                   type="button"
@@ -578,13 +620,40 @@ function OffersTab() {
                   className="h-7 w-7 text-muted-foreground hover:text-destructive"
                   aria-label="Delete offer"
                 >
-                  <Trash2 className="h-3 w-3" />
+                  <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               </div>
             </div>
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Orders Tab ────────────────────────────────────────────────────────────────
+
+function OrdersTab() {
+  return (
+    <div className="space-y-5">
+      <div>
+        <h2 className="font-semibold text-foreground">Orders</h2>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Customer orders placed through the store.
+        </p>
+      </div>
+      <div
+        data-ocid="admin.orders.empty_state"
+        className="flex flex-col items-center justify-center py-16 border border-dashed border-border rounded-xl text-muted-foreground gap-3"
+      >
+        <ShoppingBag className="h-8 w-8 text-muted-foreground/40" />
+        <div className="text-center">
+          <p className="text-sm font-medium">No orders yet.</p>
+          <p className="text-xs mt-1 text-muted-foreground">
+            Orders placed by customers will appear here.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
@@ -897,7 +966,7 @@ export function AdminPage({
               ← Back to Store
             </button>
             <span className="text-muted-foreground/40">|</span>
-            <span className="font-display font-semibold text-foreground">
+            <span className="font-display font-bold text-foreground tracking-tight">
               Admin Panel
             </span>
           </div>
@@ -937,6 +1006,9 @@ export function AdminPage({
             <TabsList className="mb-6">
               <TabsTrigger value="products" data-ocid="admin.products.tab">
                 Products
+              </TabsTrigger>
+              <TabsTrigger value="orders" data-ocid="admin.orders.tab">
+                Orders
               </TabsTrigger>
               <TabsTrigger value="categories" data-ocid="admin.categories.tab">
                 Categories
@@ -991,7 +1063,11 @@ export function AdminPage({
                   </p>
                 </div>
               ) : (
-                <Accordion type="multiple" className="space-y-2">
+                <Accordion
+                  type="multiple"
+                  defaultValue={Object.keys(grouped)}
+                  className="space-y-2"
+                >
                   {Object.entries(grouped).map(([cat, items], ci) => (
                     <AccordionItem
                       key={cat}
@@ -1038,10 +1114,10 @@ export function AdminPage({
                                   variant="ghost"
                                   data-ocid={`admin.product.edit_button.${pi + 1}`}
                                   onClick={() => openEditProduct(p)}
-                                  className="h-4 w-4 text-muted-foreground hover:text-foreground"
+                                  className="h-7 w-7 text-muted-foreground hover:text-foreground"
                                   aria-label="Edit product"
                                 >
-                                  <Pencil className="h-2.5 w-2.5" />
+                                  <Pencil className="h-3.5 w-3.5" />
                                 </Button>
                                 <Button
                                   type="button"
@@ -1050,10 +1126,10 @@ export function AdminPage({
                                   data-ocid={`admin.product.delete_button.${pi + 1}`}
                                   onClick={() => handleDeleteProduct(p)}
                                   disabled={deleteProduct.isPending}
-                                  className="h-4 w-4 text-muted-foreground hover:text-destructive"
+                                  className="h-7 w-7 text-muted-foreground hover:text-destructive"
                                   aria-label="Delete product"
                                 >
-                                  <Trash2 className="h-2.5 w-2.5" />
+                                  <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
                               </div>
                             </div>
@@ -1064,6 +1140,10 @@ export function AdminPage({
                   ))}
                 </Accordion>
               )}
+            </TabsContent>
+
+            <TabsContent value="orders">
+              <OrdersTab />
             </TabsContent>
 
             <TabsContent value="categories">
@@ -1134,10 +1214,10 @@ export function AdminPage({
                         data-ocid={`admin.category.delete_button.${i + 1}`}
                         onClick={() => handleDeleteCategory(cat)}
                         disabled={deleteCategory.isPending}
-                        className="h-4 w-4 text-muted-foreground hover:text-destructive"
+                        className="h-7 w-7 text-muted-foreground hover:text-destructive"
                         aria-label={`Delete ${cat}`}
                       >
-                        <Trash2 className="h-2.5 w-2.5" />
+                        <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
                   ))}

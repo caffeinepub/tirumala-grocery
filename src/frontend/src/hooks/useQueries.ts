@@ -120,6 +120,8 @@ export function useAddProduct() {
       category: string;
       imageUrl: string;
       stock: bigint;
+      unit: string;
+      quantityLabel: string;
     }) => {
       const actor = getActor(rawActor);
       if (!actor) throw new Error("Not connected");
@@ -130,6 +132,8 @@ export function useAddProduct() {
         args.category,
         args.imageUrl,
         args.stock,
+        args.unit,
+        args.quantityLabel,
       );
     },
     onSuccess: () => {
@@ -150,6 +154,8 @@ export function useUpdateProduct() {
       category: string;
       imageUrl: string;
       stock: bigint;
+      unit: string;
+      quantityLabel: string;
     }) => {
       const actor = getActor(rawActor);
       if (!actor) throw new Error("Not connected");
@@ -161,6 +167,8 @@ export function useUpdateProduct() {
         args.category,
         args.imageUrl,
         args.stock,
+        args.unit,
+        args.quantityLabel,
       );
     },
     onSuccess: () => {
