@@ -22,6 +22,17 @@ interface NavbarProps {
   onAdminActivate?: () => void;
 }
 
+const CATEGORY_CHIPS = [
+  { label: "Grains", emoji: "🌾", color: "bg-amber-500" },
+  { label: "Dairy", emoji: "🥛", color: "bg-sky-400" },
+  { label: "Spices", emoji: "🌶️", color: "bg-orange-500" },
+  { label: "Fruits", emoji: "🍎", color: "bg-pink-500" },
+  { label: "Vegetables", emoji: "🥦", color: "bg-green-500" },
+  { label: "Pulses", emoji: "🫘", color: "bg-yellow-600" },
+  { label: "Oils", emoji: "🫙", color: "bg-lime-500" },
+  { label: "Snacks", emoji: "🍿", color: "bg-purple-500" },
+];
+
 export function Navbar({
   cartCount,
   onCartOpen,
@@ -73,33 +84,38 @@ export function Navbar({
     }
   }
 
+  function handleChipClick() {
+    onNavClick("products");
+  }
+
   return (
-    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
-      <div className="container mx-auto flex items-center justify-between h-16 px-4 md:px-6">
+    <header className="sticky top-0 z-50 bg-white border-b border-stone-200 shadow-sm">
+      {/* Main top row */}
+      <div className="container mx-auto flex items-center justify-between h-11 px-3 md:px-5">
         <button
           type="button"
           data-ocid="nav.home.link"
           onClick={handleLogoClick}
-          className="font-display text-xl font-semibold text-foreground hover:text-primary transition-colors"
+          className="font-bold text-base text-amber-800 hover:text-amber-600 transition-colors tracking-tight"
         >
-          Tirumala Grocery
+          🛒 Tirumala Grocery
         </button>
 
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden md:flex items-center gap-4">
           {links.map((link) => (
             <button
               type="button"
               key={link.id}
               data-ocid={`nav.${link.id}.link`}
               onClick={() => onNavClick(link.id)}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className="text-xs font-medium text-stone-500 hover:text-amber-700 transition-colors"
             >
               {link.label}
             </button>
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           {isAdminDevice && (
             <Button
               type="button"
@@ -107,9 +123,9 @@ export function Navbar({
               size="sm"
               data-ocid="nav.admin.link"
               onClick={onAdminClick}
-              className="hidden md:flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+              className="hidden md:flex items-center gap-1 text-xs text-stone-500 hover:text-amber-700 h-7 px-2"
             >
-              <Settings className="h-2.5 w-2.5" />
+              <Settings className="h-3 w-3" />
               Admin
             </Button>
           )}
@@ -120,12 +136,12 @@ export function Navbar({
             variant="ghost"
             size="icon"
             onClick={onCartOpen}
-            className="relative"
+            className="relative h-8 w-8"
             aria-label={`Cart, ${cartCount} items`}
           >
-            <ShoppingCart className="h-2.5 w-2.5" />
+            <ShoppingCart className="h-4 w-4 text-amber-700" />
             {cartCount > 0 && (
-              <Badge className="absolute -top-1 -right-1 h-3 w-3 flex items-center justify-center p-0 text-xs bg-primary text-primary-foreground">
+              <Badge className="absolute -top-0.5 -right-0.5 h-4 w-4 flex items-center justify-center p-0 text-[10px] bg-red-500 text-white border-0">
                 {cartCount}
               </Badge>
             )}
@@ -135,16 +151,42 @@ export function Navbar({
             type="button"
             variant="ghost"
             size="icon"
-            className="md:hidden"
+            className="md:hidden h-8 w-8"
             onClick={() => setMobileOpen((v) => !v)}
             aria-label="Toggle menu"
           >
             {mobileOpen ? (
-              <X className="h-2.5 w-2.5" />
+              <X className="h-3.5 w-3.5" />
             ) : (
-              <Menu className="h-2.5 w-2.5" />
+              <Menu className="h-3.5 w-3.5" />
             )}
           </Button>
+        </div>
+      </div>
+
+      {/* Colorful category chips row */}
+      <div className="border-t border-stone-100 bg-gradient-to-r from-amber-50 via-white to-green-50">
+        <div
+          className="flex items-center gap-2 px-3 md:px-5 py-1.5 overflow-x-auto"
+          style={
+            {
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+            } as React.CSSProperties
+          }
+        >
+          {CATEGORY_CHIPS.map((chip) => (
+            <button
+              key={chip.label}
+              type="button"
+              data-ocid={`nav.category.${chip.label.toLowerCase()}.button`}
+              onClick={handleChipClick}
+              className={`flex-shrink-0 flex items-center gap-1 ${chip.color} text-white text-xs font-semibold px-3 py-0.5 rounded-full hover:opacity-85 active:scale-95 transition-all shadow-sm`}
+            >
+              <span>{chip.emoji}</span>
+              <span>{chip.label}</span>
+            </button>
+          ))}
         </div>
       </div>
 
@@ -155,9 +197,9 @@ export function Navbar({
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="md:hidden overflow-hidden border-t border-border bg-background"
+            className="md:hidden overflow-hidden border-t border-stone-100 bg-white"
           >
-            <nav className="flex flex-col p-4 gap-1">
+            <nav className="flex flex-col p-3 gap-0.5">
               {links.map((link) => (
                 <button
                   type="button"
@@ -167,7 +209,7 @@ export function Navbar({
                     onNavClick(link.id);
                     setMobileOpen(false);
                   }}
-                  className="text-left px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  className="text-left px-3 py-1.5 rounded-md text-sm font-medium text-stone-500 hover:text-amber-700 hover:bg-amber-50 transition-colors"
                 >
                   {link.label}
                 </button>
@@ -180,9 +222,9 @@ export function Navbar({
                     onAdminClick();
                     setMobileOpen(false);
                   }}
-                  className="text-left px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex items-center gap-1.5"
+                  className="text-left px-3 py-1.5 rounded-md text-sm font-medium text-stone-500 hover:text-amber-700 hover:bg-amber-50 transition-colors flex items-center gap-1.5"
                 >
-                  <Settings className="h-2.5 w-2.5" />
+                  <Settings className="h-3 w-3" />
                   Admin
                 </button>
               )}
